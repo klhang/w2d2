@@ -30,4 +30,48 @@ img {
   width: 100%
 }
 
+nav li {
+  display: inline-block;
+  padding: 20px;
+}
 
+nav {
+  display: inline-block;
+}
+
+body {
+  width: 900px;
+  margin: 0 auto;
+}
+
+section {
+  vertical-align: top;
+  width: 700px;
+  display: inline-block;
+}
+
+aside {
+  width: 180px;
+  display: inline-block;
+  margin-right: 15px;
+}
+
+.ingredients-list li {
+  top-margin: 15px;
+  bottom-margin: 15px;
+}
+
+#directions li {
+  top-margin: 15px;
+  bottom-margin: 15px;
+}
+
+input {
+  display: block;
+}
+
+
+
+select text, select, select textarea {
+  width: 150px;
+}
