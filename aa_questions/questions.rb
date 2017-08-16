@@ -54,6 +54,12 @@ class User
   def followed_questions
     FollowedQuestions.followed_questions_for_user_id(@id)
   end
+
+  def average_karma
+    karma = QuestionsDatabase.instance.execute(<<-SQL, @id)
+
+    SQL
+  end
 end
 
 
@@ -102,7 +108,17 @@ class Question
     FollowedQuestions.followers_for_question_id(@id)
   end
 
+  def likers
+    QuestionLike.likers_for_question_id(@id)
+  end
 
+  def num_likes
+    QuestionLike.num_likes_for_question_id(@id)
+  end
+
+  def liked_questions
+    QuestionLike.liked_questions_for_user_id(@user_id)
+  end
 
 end
 
@@ -158,17 +174,17 @@ class QuestionFollow
 
   def self.most_followed_questions(n)
     questions = QuestionsDatabase.instance.execute(<<-SQL, n)
-    SELECT
-      questions.*
-    FROM
-      question_follows
-    JOIN
-      questions ON questions.id = question_follows.question_id
-    GROUP BY
-      question_id
-    ORDER BY
-      COUNT(*) DESC
-    LIMIT ?
+      SELECT
+        questions.*
+      FROM
+        question_follows
+      JOIN
+        questions ON questions.id = question_follows.question_id
+      GROUP BY
+        question_id
+      ORDER BY
+        COUNT(*) DESC
+      LIMIT ?
     SQL
 
     questions.map{ |options| Question.new(options) }
@@ -257,5 +273,45 @@ class QuestionLike
     @id = options['id']
     @user_id = options['user_id']
     @question_id = options['question_id']
+  end
+
+  def self.likers_for_question_id(question_id)
+    users = QuestionsDatabase.instance.execute(<<-SQL, question_id)
+      SELECT
+        users.*
+      FROM
+        question_likes
+      JOIN
+        users ON question_likes.user_id = users.id
+      WHERE
+      question_id = ?
+    SQL
+    users.map {|options| User.new(options)}
+  end
+
+  def self.num_likes_for_question_id(question_id)
+    num_likes = QuestionsDatabase.instance.execute(<<-SQL, question_id)
+      SELECT
+        COUNT(*)
+      FROM
+        question_likes
+      WHERE
+        question_id = ?
+    SQL
+    num_likes["COUNT(*)"]
+  end
+
+  def self.liked_questions_for_user_id(user_id)
+    liked_questions = QuestionsDatabase.instance.execute(<<-SQL, user_id)
+      SELECT
+        questions.*
+      FROM
+        question_likes
+      JOIN
+        questions ON question_likes.question_id = questions.id
+      WHERE
+      questions.user_id = ?
+    SQL
+    liked_questions.map {|options| Question.new(options)}
   end
 end
